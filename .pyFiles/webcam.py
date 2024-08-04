@@ -3,11 +3,14 @@ import cv2
 import torch
 import face_detection
 from torchvision.transforms import functional as TF
+from functions import AgeEstimationModel
+
+AgeEstimationModel()
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def draw_faces(im, bboxes):
-    model_path = 'E:\\My Drive\\deepcatalist\\model.pt'
+    model_path = 'E:\\My Drive\\deepcatalist\\model2.pt'
     model = torch.load(model_path, map_location=torch.device(device))
     model.eval()
     for bbox in bboxes:
@@ -75,3 +78,4 @@ def Webcam():
 
     cap.release()
     cv2.destroyAllWindows()
+Webcam()

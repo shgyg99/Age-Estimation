@@ -7,8 +7,8 @@ import torch
 from torch.utils.data import Dataset
 import torch.nn as nn
 import tqdm
-from torchvision.models import resnet18
-from torchvision.models import ResNet18_Weights
+from torchvision.models import resnet50
+from torchvision.models import ResNet50_Weights
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -109,7 +109,7 @@ class AgeEstimationModel(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.model = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        self.model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
         self.model.fc = nn.Identity()
         self.fc = nn.Linear(in_features=512, out_features=1, bias=True)
 

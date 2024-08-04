@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from torchvision.transforms import functional as TF
 from transforms import test_transform
 from functions import AgeEstimationModel
+import os
 
 AgeEstimationModel()
 
@@ -12,6 +13,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 def picture(model_path, image_path):    
+    
     model = torch.load(model_path, map_location=torch.device(device))
     model.eval()
 
@@ -36,3 +38,7 @@ def picture(model_path, image_path):
 
     plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     plt.show()
+
+for pic in os.listdir('E:\\My Drive\\deepcatalist\\test_pics\\'):
+    pic = os.path.join('E:\\My Drive\\deepcatalist\\test_pics\\', pic)
+    picture('E:\\My Drive\\deepcatalist\\model2.pt', pic)
