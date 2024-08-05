@@ -4,11 +4,15 @@ import random
 import matplotlib.pyplot as plt
 from PIL import Image
 import torch
+import cv2
 from torch.utils.data import Dataset
 import torch.nn as nn
+from torchvision.transforms import functional as TF
 import tqdm
 from torchvision.models import resnet50
 from torchvision.models import ResNet50_Weights
+from inputs import main_path
+import face_detection
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -19,8 +23,8 @@ def dataset_to_csv(dataset_folder):
     gender = [['Male', 'Female'][int(i.split('_')[1])] for i in image_name]
     ethnicity = [['White', 'Black', 'Asian', 'Indian', 'Others'][int(i.split('_')[2])] for i in image_name]
     dataset = pd.DataFrame({'image_name':image_name, 'age':age, 'ethnicity':ethnicity, 'gender':gender})
-    dataset.to_csv('E:\\My Drive\\deepcatalist\\utkface_dataset.csv')
-    return pd.read_csv('E:\\My Drive\\deepcatalist\\utkface_dataset.csv')
+    dataset.to_csv(os.path.join(main_path, '.csvFiles', 'utkface_dataset.csv'))
+    return pd.read_csv(os.path.join(main_path, '.csvFiles', 'utkface_dataset.csv'))
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -152,3 +156,101 @@ def evaluate(model, test_loader, metric):
             metric.update(outputs, targets.unsqueeze(1))
             tepoch.set_postfix(loss=metric.compute().item())
     return metric.compute().item()
+
+def picture_upload(model_path, image_path, transform):    
+    
+    model = torch.load(model_path, map_location=torch.device(device))
+    model.eval()
+
+    detector = face_detection.build_detector(
+            "DSFDDetector", confidence_threshold=.5, nms_iou_threshold=.3)
+    image =cv2.imread(image_path)
+    dets = detector.detect(
+                            image[:, :, ::-1]
+                        )[:, :4]
+    for bbox in dets:
+        top, right, bottom, left = [int(_) for _ in bbox]
+        cv2.rectangle(image, (top, right), (bottom, left), (0, 0, 255), 2)
+        image_cropped = image[right:left, top:bottom]
+        image_transformed = transform(TF.to_pil_image(image_cropped)).unsqueeze(0)
+        age = model(image_transformed)
+        age = int(age.item())
+        label = f'age:{age}'
+        (w, h), _ = cv2.getTextSize(
+                label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
+        cv2.putText(image, label, (bottom-w, right - h),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.show()
+
+def draw_faces(im, bboxes):
+    model_path = 'E:\\My Drive\\deepcatalist\\model2.pt'
+    model = torch.load(model_path, map_location=torch.device(device))
+    model.eval()
+    for bbox in bboxes:
+        x0, y0, x1, y1 = [int(_) for _ in bbox]
+        cv2.rectangle(im, (x0, y0), (x1, y1), (0, 0, 255), 2)
+        img = TF.to_tensor(im[x0:x1, y0:y1]).unsqueeze(0)
+        age = int(model(img).item())
+        label = f'age:{age}'
+        (w, h), _ = cv2.getTextSize(
+            label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
+        cv2.putText(im, label, (x1, y1 - 5),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        
+def Webcam():
+    detector = face_detection.build_detector(
+          "DSFDDetector", confidence_threshold=.5, nms_iou_threshold=.3)
+    cap = cv2.VideoCapture(0)
+    while cap.isOpened():
+
+
+        if cv2.waitKey(2) & 0xFF == ord('s'):
+            while (cv2.waitKey(1) & 0xFF == ord('q')) == False:
+                ret, frame = cap.read()
+                frame = cv2.flip(frame, 1)
+                cv2.putText(frame,
+                    'PRESS s to start',
+                    (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    (204, 0, 102),
+                    1,
+                    cv2.LINE_4)
+                cv2.putText(frame,
+                    'PRESS q to quite',
+                    (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    (204, 0, 102),
+                    1,
+                    cv2.LINE_4)
+                dets = detector.detect(
+                        frame[:, :, ::-1]
+                    )[:, :4]
+                draw_faces(frame, dets)
+                cv2.imshow('video',frame)
+
+
+        elif cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        else:
+            ret, frame = cap.read()
+            frame = cv2.flip(frame, 1)
+            cv2.putText(frame,
+                    'PRESS s to start',
+                    (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    (204, 0, 102),
+                    1,
+                    cv2.LINE_4)
+            cv2.putText(frame,
+                    'PRESS q to quite',
+                    (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    (204, 0, 102),
+                    1,
+                    cv2.LINE_4)
+        cv2.imshow('video',frame)
+
+    cap.release()
+    cv2.destroyAllWindows()

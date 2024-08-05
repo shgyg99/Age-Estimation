@@ -1,17 +1,17 @@
 import torch
 from torch import optim
 import torch.nn as nn
-import tqdm
 import torchmetrics as tm
 from functions import train_one_epoch, evaluate
 from dataloader import train_loader, valid_loader
-
+import os
+from inputs import main_path, models
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 torch.cuda.empty_cache()
 
 # model = AgeEstimationModel().to(device)
-model = torch.load('E:\\My Drive\\deepcatalist\\model.pt', map_location=torch.device(device))
+model = torch.load(models['resnet50'], map_location=torch.device(device))
 
 # model.model.requires_grad_(True)
 # model.model.layer4.requires_grad_(True)
@@ -48,7 +48,7 @@ for epoch in range(num_epochs):
   loss_valid_hist.append(loss_valid)
 
   if loss_valid < best_loss_valid:
-    torch.save(model, '/content/drive/MyDrive/deepcatalist/model.pt')
+    torch.save(model, os.path.join(main_path, 'models\\', 'new_model.pt'))
     best_loss_valid = loss_valid
     print('model saved!')
 
