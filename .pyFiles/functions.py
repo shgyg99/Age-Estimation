@@ -181,8 +181,8 @@ def picture_upload(model_path, image_path, transform):
         cv2.putText(image, label, (bottom-w, right - h),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-    # plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    # plt.show()
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.show()
     return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 def draw_faces(im, bboxes):
