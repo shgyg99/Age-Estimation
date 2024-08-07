@@ -16,4 +16,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://shgyg99:$HF_TOKEN@huggingface.co/spaces/shgyg99/AgeEstimationApp main
+        run: git push https://shgyg99:$HF_TOKEN@huggingface.co/spaces/shgyg99/AgeEstimationApp master:main
