@@ -180,13 +180,9 @@ def picture_upload(model_path, image_path, transform):
                 label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
         cv2.putText(image, label, (bottom-w, right - h),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-
-    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    plt.show()
-    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-def draw_faces(im, bboxes):
-    model_path = 'E:\\My Drive\\deepcatalist\\model2.pt'
+        return image
+# cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+def draw_faces(im, bboxes, model_path):
     model = torch.load(model_path, map_location=torch.device(device))
     model.eval()
     for bbox in bboxes:
